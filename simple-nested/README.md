@@ -49,7 +49,7 @@ The memory usage is mentioned in the runtime configuration.
 
 The Cypher source for both tests is [here](neo4j/).  
 
-It is not tuned (more in the runtime configuration), apart from:
+It is not tuned (more in the [runtime configuration](https://github.com/datathings/greycat-perf/blob/main/simple-nested/README.md#runtime-configuration)), apart from:
 
 - split of transactions into 10K rows, which otherwise fails with memory allocation errors,
 - index on `Person.id`, which does speed up the read query.
@@ -59,7 +59,7 @@ There are surely ways to improve upon this query, but more time would be needed.
 
 ### GreyCat
 
-The insert and query functions share the data types, and are grouped in the same [project file](greycat/).  
+The insert and query functions share the data types, and are grouped in the same [project file](greycat/project.gcl).  
 Each function can be invoked separately at the command line, such as:
 
 ```
