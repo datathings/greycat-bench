@@ -1,5 +1,5 @@
 
-# GreyCat and Neo4j performance indication
+# GreyCat, Neo4j relative performance
 
 ## Scenario
 
@@ -17,49 +17,56 @@ To evaluate graph performance, the transaction components above are modeled ***i
 - in turn, the destination person *links* to an originator (person),
 - in turn, the originator *links* to a currency (here: EUR or JPY).
 
+Several transactions are created.
+
 The first test measures the insertion speed of the transaction data (generated randomly).  
 
 The second test measures the speed of a graph query (the total amount of transactions in Japanese yens received by a particular person).
 
-The source code for both tests is present in the respective subdirectories.
+The source code for both tests is present in the respective subdirectories: [neo4j](neo4j/), [greycat](greycat/).
 
 ## Results
 
-```
-|----------------------------------------------------------------------------------|
-|              | insertion | insertion | query    | query    | storage  | storage  |
-| transactions | time (s)  | time (s)  | time (s) | time (s) | size(GB) | size(GB) |
-|     (M)      | Neo4j     | GreyCat   | Neo4j    | GreyCat  | Neo4j*   | GreyCat  |
-|----------------------------------------------------------------------------------|
+| transactions | insertion | insertion | query    | query    | storage  | storage  |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| (M) | time (s)  | time (s)  | time (s) | time (s) | size(GB) | size(GB) |
+|           | Neo4j     | GreyCat   | Neo4j    | GreyCat  | Neo4j*   | GreyCat  |
 |       0.1    |     4.2   |     0.06  |     6.0  |    0.043 | 0.26 tra |  0.0035  |
 |              |           |           |          |          | 0.001 db |          |
 |       1      |    18.8   |     0.45  |   n/a**  |    0.21  | 0.51 tra |  0.035   | 
 |              |           |           |          |          | 0.19 db  |          |
 |      10      |   160.0   |     4.1   |   n/a**  |    1.8   | 1.7 tra  |  0.34    |
 |              |           |           |          |          | 3.3 db   |          |
-|----------------------------------------------------------------------------------|
-*: Neo4j disk storage is made of a transaction log (tra), and a database proper (db).
+
+*: Neo4j disk storage is made of a transaction log (tra), and a database proper (db).  
 **: the test failed to complete in a reasonable time (several minutes).
-```
+
 The memory usage is mentioned in the runtime configuration.
 
-## Source code comments
+## Comments on source code
 
 ### Neo4j
 
-The Cypher source for both measurements is listed below.  
-It is not finely tuned (more in the runtime configuration), except for:
+The Cypher source for both tests is [here](neo4j/).  
 
-- split of transactions into 10K rows, which otherwise fails with memory allocation errors.
-- index on `Person.id`, which did speed up the read query (as per the `explain` directive).
+It is not tuned (more in the runtime configuration), apart from:
+
+- split of transactions into 10K rows, which otherwise fails with memory allocation errors,
+- index on `Person.id`, which does speed up the read query.
 
 This, unfortunately prevents the read query to complete with larger graph sizes.
-There are surely ways to improve upon this query, but time constraints prevented additional investigation.
+There are surely ways to improve upon this query, but more time would be needed.
 
 ### GreyCat
 
-The insert and query functions share the data types, and are grouped in the same project file.  
-Each function can be called separately at the command line.  
+The insert and query functions share the data types, and are grouped in the same [project file](greycat/).  
+Each function can be invoked separately at the command line, such as:
+
+```
+$ rm -rf gcdata  # clear all data
+$ greycat run --cache=5000 --store=5000 project.gcl insert
+$ greycat run --cache=5000 --store=5000 project.gcl query
+```
 
 ## Runtime configuration
 
@@ -78,23 +85,12 @@ For GreyCat, the time reported includes the time to start and shutdown the GreyC
 
 Neo4j is version 5.11.0, Community.
 
-The settings (`neo4j.conf`) are derived from `neo4j-admin server memory-recommendation`.   
+The [settings](neo4j/neo4j.conf) are derived from `neo4j-admin server memory-recommendation`.   
 The only non-default settings are:
 ```
-# Java Heap Size: by default the Java heap size is dynamically calculated based
-# on available system resources. Uncomment these lines to set specific initial
-# and maximum heap size.
 server.memory.heap.initial_size=11800m
 server.memory.heap.max_size=11800m
-
-# The amount of memory to use for mapping the store files.
-# The default page cache memory assumes the machine is dedicated to running
-# Neo4j, and is heuristically set to 50% of RAM minus the Java heap size.
-# greycat
 server.memory.pagecache.size=12000m
-
-# Exits JVM on the first occurrence of an out-of-memory error. Its preferable to restart VM in case of out of memory errors.
-# greycat set
 server.jvm.additional=-XX:+ExitOnOutOfMemoryError
 ```
 These memory settings lead to about 24GB of allocated memory (14GB resident).
