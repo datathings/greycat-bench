@@ -1,0 +1,69 @@
+
+type Curr {
+	static base : String = "USD";
+	name: String;
+	rate: float;
+}
+
+type Tran {
+	id: int;
+	val: float;
+	to: To;
+}
+
+type Person {
+	id: int;
+	name: String;
+}
+
+type To {
+	p: node<Person>;
+	from: From;
+}
+
+type From {
+	p: node<Person>;
+	curr: node<Curr>;
+}
+
+var cur: nodeList<node<Curr>>;
+var per: nodeList<node<Person>>;
+var tra: nodeList<node<Tran>>;
+
+fn insert() {
+	cur ?= nodeList::new();
+	cur.add(node::new(Curr { name: "EUR", rate: 0.9 }));
+	cur.add(node::new(Curr { name: "JPY", rate: 0.007 }));
+
+	per ?= nodeList::new();
+	per.add(node::new(Person { id: 0, name: "Alice" }));
+	per.add(node::new(Person { id: 1, name: "Byron" }));
+	per.add(node::new(Person { id: 2, name: "Charles" }));
+	per.add(node::new(Person { id: 3, name: "Deirdre" }));
+	per.add(node::new(Person { id: 4, name: "Edmond" }));
+	per.add(node::new(Person { id: 5, name: "Francis" }));
+	per.add(node::new(Person { id: 6, name: "Gwen" }));
+	per.add(node::new(Person { id: 7, name: "Helen" }));
+
+	tra ?= nodeList::new();
+
+	for (var i: int = 1; i <= 10_000_000; i++) {
+		var c = cur.get(i % 2);
+		var f = From { p: per.get((i + 4) % 8), curr: c };
+		var t = To { p: per.get(i % 8), from: f };
+		tra.add(node::new(Tran { id: i, val: 12.4 + i * 0.2, to: t }));
+	}
+}
+
+fn query() {
+	var cnt : int = 0;
+	var sum : float = 0.0;
+	for (i, t in tra) {
+		if (t->to.p->id == 1 && t->to.from.curr->name == "JPY") {
+			cnt++;
+			sum = sum + t->val;
+		}
+	}
+	println("${cnt} ${sum}");
+}
+
