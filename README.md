@@ -9,5 +9,5 @@ When comparisons are made with other software, we welcome any improvement to our
 | test | description |
 | :--- | :--- |
 | [simple nested](./simple-nested) | Neo4j / GreyCat comparison on, up-to 10M, 4-level-deep records. |
-| [simple index](./simple-indexed) | Neo4j / GreyCat comparison on, up-to 20M, flat records with single relation. |
+| [simple index](./simple-index) | Neo4j / GreyCat comparison on, up-to 20M, flat records with single relation. |
 
