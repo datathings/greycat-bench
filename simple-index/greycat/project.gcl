@@ -1,0 +1,22 @@
+
+use util;
+
+type Part {
+	id: int;
+}
+
+var ip: nodeIndex<int, Part>;
+
+fn insert() {
+	ip ?= nodeIndex::new();
+	var r = Random::new();
+	r.setSeed(1);
+	for (var i: int = 1; i <= 20_000_000; i++) {
+		ip.set(r.uniform(0, 20_000_000), Part {id: i});
+	}
+}
+
+fn query() {
+	println(ip.get(10_000_000));
+}
+
