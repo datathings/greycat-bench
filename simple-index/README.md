@@ -35,7 +35,7 @@ The memory usage is mentioned in the runtime configuration.
 
 The Cypher source for both tests is [here](neo4j/).  
 
-It is not tuned (more in the [runtime configuration](https://github.com/datathings/greycat-perf/blob/main/simple-nested/README.md#runtime-configuration)), apart from:
+It is not tuned (more in the [runtime configuration](https://github.com/datathings/greycat-perf/blob/main/simple-index/README.md#runtime-configuration)), apart from:
 
 - split of transactions into 10K rows, which otherwise fails with memory allocation errors,
 - index on serial number id.
