@@ -16,8 +16,8 @@ The source code for both tests is present in the respective subdirectories: [neo
 ## Results
 
 | transactions | insertion | insertion | query    | query    | storage  | storage  |
-| | | | 1, 100K | 1, 100K | storage  | storage  |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| | | | 1, 100K | 1, 100K |   |   |
 | (M) | time (s)  | time (s)  | time (s) | time (s) | size(GB) | size(GB) |
 |              | Neo4j     | GreyCat   | Neo4j    | GreyCat  | Neo4j*   | GreyCat  |
 |      10      |   99.0   |     30.3   |   1.011  |    0.020 | 2.6 tra  |  0.26    |
