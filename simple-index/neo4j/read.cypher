@@ -1,7 +1,8 @@
 
-# for 20m relationships
 
+unwind range(1,100000) as i
+with i
 match (r:Id)-[:Ref]->(p:Part)
-where r.id = 10000011
+where r.id = toInteger(rand() * 20000000) 
 return p.pid;
 

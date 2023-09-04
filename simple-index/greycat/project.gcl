@@ -17,6 +17,10 @@ fn insert() {
 }
 
 fn query() {
-	println(ip.get(10_000_000));
+	var r = Random::new();
+	r.setSeed(2);
+	for (var i: int = 1; i <= 100_000; i++) {
+		println(ip.get(r.uniform(0, 20_000_000)));
+	}
 }
 
