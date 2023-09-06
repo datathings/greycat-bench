@@ -30,13 +30,15 @@ The source code for both tests is present in the respective subdirectories: [neo
 | transactions | insertion | insertion | query    | query    | storage  | storage  |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | (M) | time (s)  | time (s)  | time (s) | time (s) | size(GB) | size(GB) |
-|           | Neo4j     | GreyCat   | Neo4j    | GreyCat  | Neo4j*   | GreyCat  |
+|              | Neo4j     | GreyCat   | Neo4j    | GreyCat  | Neo4j*   | GreyCat  |
 |       0.1    |     4.2   |     0.06  |     6.0  |    0.043 | 0.26 tra |  0.0035  |
 |              |           |           |          |          | 0.001 db |          |
 |       1      |    18.8   |     0.45  |   n/a**  |    0.21  | 0.51 tra |  0.035   | 
 |              |           |           |          |          | 0.19 db  |          |
 |      10      |   160.0   |     4.1   |   n/a**  |    1.8   | 1.7 tra  |  0.34    |
 |              |           |           |          |          | 3.3 db   |          |
+|  11,000      |    n/a    | 11,105    |   n/a    |  4,847    |  n/a     |  400     |
+|              |           | (185m5s)  |          | (80m47s) |          |          |
 
 *: Neo4j disk storage is made of a transaction log (tra), and a database proper (db).  
 **: the test failed to complete in a reasonable time (several minutes).
@@ -99,9 +101,11 @@ These memory settings lead to about 24GB of allocated memory (14GB resident).
 
 GreyCat version is 6 (beta).
 
-The memory cache is set to 5GB and the maximum disk size to 5GB.  
-This totals to about 10GB of RAM allocated (virtual).  
+For 0.1, 1 and 10M transactions, the memory cache is set to 5GB and the maximum disk size to 5GB.  
+This totals to about 10GB of RAM allocated (virtual, about 5GB resident).  
 Decreasing the cache memory delays the execution a little, yet completes successfully: 
 for example: a 500MB cache decreases speed by about 10% for both insert and query.
+
+For 11,000M transactions (11 billions), memory and storage respectively set to 20GB and 500GB (21GB resident).
 
 
