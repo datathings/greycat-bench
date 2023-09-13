@@ -70,7 +70,6 @@ call {
 	create (:Tran {id: i, val: 12.4 + i * 0.2})-[:T]->(to)-[:F]->(from)-[:C]->(c)
 };
 ```
-
 This was solved with the specification of a transaction split:
 ```
 unwind range(1, 10000000) as i
@@ -80,8 +79,7 @@ call {
 	create (:Tran {id: i, val: 12.4 + i * 0.2})-[:T]->(to)-[:F]->(from)-[:C]->(c)
 } in transactions of 10000 rows;
 ```
-
-However, the graph query below was unable to complete in a reasonable time.
+However, the graph query (below) was unable to complete in a reasonable time.
 ```
 match (t:Tran)-[:T]->(to:Person {id: 1})-->(c:Currency {name: 'JPY'})
 with distinct t as dt
@@ -96,8 +94,8 @@ The Advanced query tuning example pointed to explicit index creation:
 create index for (p:Person) on (p.id);
 call db.awaitIndexes;
 ```
-This allowed the query to complete.
-Profiling reported a `+DirectedRelationshipTypeScan` column operator.
+This allowed the query to complete
+(profiling reported a `+DirectedRelationshipTypeScan` column operator).
 
 Finally, the debug.log reported warnings related to the JVM memory configuration.
 As suggested, `neo4j-admin memory-recommendation` output was applied to the Neo4j configuration.
