@@ -98,10 +98,9 @@ This allowed the query to complete
 (profiling reported a `+DirectedRelationshipTypeScan` column operator).
 
 Finally, the debug.log reported warnings related to the JVM memory configuration.
-As suggested, `neo4j-admin memory-recommendation` output was applied to the Neo4j configuration.
+As suggested, `neo4j-admin memory-recommendation` output was applied to the Neo4j configuration (more in the [runtime configuration](https://github.com/datathings/greycat-perf/blob/main/simple-nested/README.md#runtime-configuration)).
 
-
-In summary, it is not further tuned (more in the [runtime configuration](https://github.com/datathings/greycat-perf/blob/main/simple-nested/README.md#runtime-configuration)), beyond from:
+In summary, 
 
 - split of transactions into 10K rows, which otherwise fails with memory allocation errors,
 - index on `Person.id`, which does speed up the read query.
