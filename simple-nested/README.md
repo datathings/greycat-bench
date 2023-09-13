@@ -3,7 +3,7 @@
 
 ## Scenario
 
-The test application is completely artificial, yet attempts to represent a common graph structure.  
+The test application is artificial, yet attempts to represent a common graph structure.  
 The data is loosely inspired from financial transactions, each includes: 
 
 - an amount, 
@@ -15,9 +15,9 @@ To evaluate graph performance, the transaction components above are modeled ***i
 
 - the transaction (amount, identification) *links* to a destination person,
 - in turn, the destination person *links* to an originator (person),
-- in turn, the originator *links* to a currency (here: EUR or JPY).
+- in turn again, the originator *links* to a currency (here: EUR or JPY).
 
-Several transactions are created.
+Many transactions are created.
 
 The first test measures the insertion speed of the transaction data (generated randomly).  
 
@@ -45,13 +45,65 @@ The source code for both tests is present in the respective subdirectories: [neo
 
 The memory usage is mentioned in the runtime configuration.
 
-## Comments on source code
+## Source code
 
-### Neo4j
+### Neo4j code explanation
 
-The Cypher source for both tests is [here](neo4j/).  
+The final Cypher source for both tests is [here](neo4j/).  
 
-It is not tuned (more in the [runtime configuration](https://github.com/datathings/greycat-perf/blob/main/simple-nested/README.md#runtime-configuration)), apart from:
+While simple, the Neo4j scripts required several refinements.
+
+The initial insert script (below), with default parameters for the server, was not able to complete the 10M records test case, 
+and failed with `Currently using 5.4 GiB. dbms.memory.transaction.total.max threshold reached`.
+```
+create 
+ (eur:Currency {id: 0, base: "USD", name: "EUR", rate: 0.9}),
+ (jpy:Currency {id: 1, base: "USD", name: "JPY", rate: 0.007}),
+ (a:Person {id: 0, name: "alice"}),
+ ... (lines omitted)
+ (h:Person {id: 7, name: "helen"})
+;
+unwind range(1, 10000000) as i
+call {
+	with i
+	match (to:Person {id: i % 8}), (from:Person {id: (i + 4) % 8}), (c:Currency {id: i % 2})
+	create (:Tran {id: i, val: 12.4 + i * 0.2})-[:T]->(to)-[:F]->(from)-[:C]->(c)
+};
+```
+
+This was solved with the specification of a transaction split:
+```
+unwind range(1, 10000000) as i
+call {
+	with i
+	match (to:Person {id: i % 8}), (from:Person {id: (i + 4) % 8}), (c:Currency {id: i % 2})
+	create (:Tran {id: i, val: 12.4 + i * 0.2})-[:T]->(to)-[:F]->(from)-[:C]->(c)
+} in transactions of 10000 rows;
+```
+
+However, the graph query below was unable to complete in a reasonable time.
+```
+match (t:Tran)-[:T]->(to:Person {id: 1})-->(c:Currency {name: 'JPY'})
+with distinct t as dt
+return count(dt), sum(dt.val);
+```
+This required reading on query tuning from the Neo4j documentation.
+The LOOKUP index, present by default, suggested to specify labels, which was already the case.
+Indeed, the `PROFILE` output did show that the column operator was `NodeByLabelScan`, and not `AllNodesScan`.
+
+The Advanced query tuning example pointed to explicit index creation:
+```
+create index for (p:Person) on (p.id);
+call db.awaitIndexes;
+```
+This allowed the query to complete.
+Profiling reported a `+DirectedRelationshipTypeScan` column operator.
+
+Finally, the debug.log reported warnings related to the JVM memory configuration.
+As suggested, `neo4j-admin memory-recommendation` output was applied to the Neo4j configuration.
+
+
+In summary, it is not further tuned (more in the [runtime configuration](https://github.com/datathings/greycat-perf/blob/main/simple-nested/README.md#runtime-configuration)), beyond from:
 
 - split of transactions into 10K rows, which otherwise fails with memory allocation errors,
 - index on `Person.id`, which does speed up the read query.
@@ -61,14 +113,20 @@ There are surely ways to improve upon this query, but more time would be needed.
 
 ### GreyCat
 
+After [GreyCat download](https://get.greycat.io/), no further setting was needed.
+
 The insert and query functions share the data types, and are grouped in the same [project file](greycat/project.gcl).  
 Each function can be invoked separately at the command line, such as:
 
 ```
 $ rm -rf gcdata  # clear all data
-$ greycat run --cache=5000 --store=5000 project.gcl insert
-$ greycat run --cache=5000 --store=5000 project.gcl query
+$ greycat run project.gcl insert
+$ greycat run project.gcl query
 ```
+
+In comparison to Neo4j's Cypher language, the GreyCat Language (GCL) is imperative, which makes the code more verbose.
+
+However, no performance tuning was necessary.
 
 ## Runtime configuration
 

@@ -44,13 +44,15 @@ The index is created after insertion.
 
 ### GreyCat
 
+After [GreyCat download](https://get.greycat.io/), no further setting was needed.
+
 The insert and query functions share the data types, and are grouped in the same [project file](greycat/project.gcl).  
 Each function can be invoked separately at the command line, such as:
 
 ```
 $ rm -rf gcdata  # clear all data
-$ greycat run --cache=5000 --store=5000 project.gcl insert
-$ greycat run --cache=5000 --store=5000 project.gcl query
+$ greycat run project.gcl insert
+$ greycat run project.gcl query
 ```
 The index is inherent to the structure, and so created before the insertion.
 
